@@ -21,6 +21,9 @@ ca-file = {{ openshift_openstack_ca_file_path }}
 {% if openshift_cloudprovider_openstack_lb_subnet_id is defined %}
 [LoadBalancer]
 subnet-id = {{ openshift_cloudprovider_openstack_lb_subnet_id }}
+{% else %}
+[LoadBalancer]
+subnet-id = {{ lookup('file','/tmp/OS_SUBNET_ID') }}
 {% endif %}
 [BlockStorage]
 ignore-volume-az = {{ openshift_cloudprovider_openstack_blockstorage_ignore_volume_az | bool | ternary('yes', 'no') }}

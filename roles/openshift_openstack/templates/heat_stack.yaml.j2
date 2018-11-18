@@ -158,8 +158,9 @@ outputs:
     value: { get_attr: [api_lb, show, provider] }
 {% endif %}
 
-conditions:
-  no_floating: {% if openshift_openstack_provider_network_name %}true{% else %}false{% endif %}
+  subnet_id:
+    description: Subnet id of the nodes
+    value: { get_resource: subnet }
 
 resources:
 
@@ -671,12 +672,12 @@ resources:
           pod_secgrp:
             - { get_resource: pod_access_sg }
 {% endif %}
-          floating_network:
-            if:
-              - no_floating
-              - ''
-              - {{ openshift_openstack_external_network_name }}
 {% if openshift_openstack_provider_network_name or not openshift_openstack_etcd_floating_ip | default(False) | bool %}
+          floating_network: ''
+{% else %}
+          floating_network: {{ openshift_openstack_external_network_name }}
+{% endif %}
+{% if openshift_openstack_provider_network_name %}
           attach_float_net: false
 {% endif %}
           volume_size: {{ openshift_openstack_etcd_volume_size }}
@@ -754,12 +755,12 @@ resources:
           pod_secgrp:
             - { get_resource: pod_access_sg }
 {% endif %}
-          floating_network:
-            if:
-              - no_floating
-              - ''
-              - {{ openshift_openstack_external_network_name }}
 {% if openshift_openstack_provider_network_name or not openshift_openstack_load_balancer_floating_ip | default(True) | bool %}
+          floating_network: ''
+{% else %}
+          floating_network: {{ openshift_openstack_external_network_name }}
+{% endif %}
+{% if openshift_openstack_provider_network_name %}
           attach_float_net: false
 {% endif %}
           volume_size: {{ openshift_openstack_lb_volume_size }}
@@ -845,12 +846,12 @@ resources:
             - { get_resource: pod_access_sg }
 {% endif %}
 {% endif %}
-          floating_network:
-            if:
-              - no_floating
-              - ''
-              - {{ openshift_openstack_external_network_name }}
 {% if openshift_openstack_provider_network_name or not openshift_openstack_master_floating_ip | default(False) | bool %}
+          floating_network: ''
+{% else %}
+          floating_network: {{ openshift_openstack_external_network_name }}
+{% endif %}
+{% if openshift_openstack_provider_network_name %}
           attach_float_net: false
 {% endif %}
           volume_size: {{ openshift_openstack_master_volume_size }}
@@ -928,12 +929,12 @@ resources:
           pod_secgrp:
             - { get_resource: pod_access_sg }
 {% endif %}
-          floating_network:
-            if:
-              - no_floating
-              - ''
-              - {{ openshift_openstack_external_network_name }}
 {% if openshift_openstack_provider_network_name or not openshift_openstack_compute_floating_ip | default(False) | bool %}
+          floating_network: ''
+{% else %}
+          floating_network: {{ openshift_openstack_external_network_name }}
+{% endif %}
+{% if openshift_openstack_provider_network_name %}
           attach_float_net: false
 {% endif %}
           volume_size: {{ openshift_openstack_node_volume_size }}
@@ -1015,12 +1016,12 @@ resources:
             - { get_resource: pod_access_sg }
 {% endif %}
 {% endif %}
-          floating_network:
-            if:
-              - no_floating
-              - ''
-              - {{ openshift_openstack_external_network_name }}
 {% if openshift_openstack_provider_network_name or not openshift_openstack_infra_floating_ip | default(True) | bool %}
+          floating_network: ''
+{% else %}
+          floating_network: {{ openshift_openstack_external_network_name }}
+{% endif %}
+{% if openshift_openstack_provider_network_name %}
           attach_float_net: false
 {% endif %}
           volume_size: {{ openshift_openstack_infra_volume_size }}

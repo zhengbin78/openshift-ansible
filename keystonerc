@@ -1,0 +1,11 @@
+export OS_AUTH_URL=https://iam.cn-east-2.myhuaweicloud.com
+export OS_USERNAME=<子账号或主账号名>
+export OS_PASSWORD=******
+export OS_IDENTITY_API_VERSION=3
+export OS_DOMAIN_NAME=<华为云主账号名>
+export OS_USER_DOMAIN_NAME=<华为云主账号名>
+export OS_PROJECT_DOMAIN_NAME=cn-east-2
+export OS_TENANT_NAME=cn-east-2
+export OS_REGION_NAME=cn-east-2
+export OS_AVAILABILITY_ZONE=cn-east-2c
+export OPENSHIFT_CLUSTER=apps.demo.com

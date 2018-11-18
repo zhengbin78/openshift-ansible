@@ -62,6 +62,7 @@ def base_openshift_inventory(cluster_hosts):
     inventory['openstack_cns_nodes'] = {'hosts': cns}
     inventory['lb'] = {'hosts': load_balancers}
     inventory['localhost'] = {'ansible_connection': 'local'}
+    inventory['cluster_hosts'] = {'hosts': [s.name for s in cluster_hosts]}
 
     return inventory
 

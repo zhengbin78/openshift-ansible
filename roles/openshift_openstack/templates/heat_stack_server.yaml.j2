@@ -149,7 +149,7 @@ parameters:
   availability_zone:
     type: string
     description: The Availability Zone to launch the instance.
-    default: nova
+    default: {{ openshift_openstack_availability_zone }}
 
   volume_size:
     type: number
@@ -199,21 +199,27 @@ outputs:
 {% endif %}
         - addr
 
-conditions:
-  no_floating: {not: { get_param: attach_float_net} }
-{% if openshift_use_flannel|default(False)|bool %}
-  no_data_subnet: {not: { get_param: attach_data_net} }
-{% endif %}
 
 
 resources:
+  bootable_volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: {{ openshift_openstack_bootable_volume_size }}
+      image: { get_param: image }
+      availability_zone: { get_param: availability_zone }
+
 
   server:
     type: OS::Nova::Server
     properties:
+      availability_zone: { get_param: availability_zone }
       name:      { get_param: name }
       key_name:  { get_param: key_name }
-      image:     { get_param: image }
+      block_device_mapping_v2:
+        - boot_index: 0
+          volume_id: { get_resource: bootable_volume }
+          delete_on_termination: true
       flavor:    { get_param: flavor }
       networks:
 {% if openshift_use_flannel|default(False)|bool %}
@@ -310,7 +316,6 @@ resources:
 
 {% if not openshift_openstack_provider_network_name %}
   floating-ip:
-    condition: { not: no_floating }
     type: OS::Neutron::FloatingIP
     properties:
       floating_network: { get_param: floating_network }
@@ -321,7 +326,7 @@ resources:
   cinder_volume:
     type: OS::Cinder::Volume
     properties:
-      size: { get_param: volume_size }
+      size: {{ openshift_openstack_bootable_volume_size }}
       availability_zone: { get_param: availability_zone }
       metadata:
         purpose: openshift_docker_storage
@@ -333,35 +338,3 @@ resources:
       instance_uuid: { get_resource: server }
 {% endif %}
 
-
-  api_lb_member:
-    type: OS::{{ openshift_openstack_lbaasv2_provider }}::PoolMember
-    condition:
-      not: {equals: [{get_param: api_lb_pool}, ""]}
-    properties:
-      pool: { get_param: api_lb_pool }
-      protocol_port: {{ openshift_master_api_port }}
-      address: { get_attr: [server, first_address]}
-{% if openshift_openstack_lbaasv2_provider != "Octavia"  %}
-      subnet: { get_param: subnet }
-{% endif %}
-
-  router_lb_pool_member_http:
-    condition:
-      not: {equals: [{get_param: router_lb_pool_http}, ""]}
-    type: OS::{{ openshift_openstack_lbaasv2_provider }}::PoolMember
-    properties:
-      pool: { get_param: router_lb_pool_http }
-      protocol_port: 80
-      address: { get_attr: [server, first_address]}
-      subnet: { get_param: subnet }
-
-  router_lb_pool_member_https:
-    condition:
-      not: {equals: [{get_param: router_lb_pool_https}, ""]}
-    type: OS::{{ openshift_openstack_lbaasv2_provider }}::PoolMember
-    properties:
-      pool: { get_param: router_lb_pool_https }
-      protocol_port: 443
-      address: { get_attr: [server, first_address]}
-      subnet: { get_param: subnet }

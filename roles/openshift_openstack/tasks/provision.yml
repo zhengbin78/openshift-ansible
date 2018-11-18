@@ -78,12 +78,12 @@
   - openstack_cli_exists is succeeded
   - stack_update_dry_run_output is failed
 
-- fail:
-    msg: The Heat stack creation failed. Please inspect the message above.
-  when:
-  - openstack_cli_exists is succeeded
-  - ( stack_create_dry_run_output is failed or
-      stack_update_dry_run_output is failed)
+#- fail:
+#    msg: The Heat stack creation failed. Please inspect the message above.
+#  when:
+#  - openstack_cli_exists is succeeded
+#  - ( stack_create_dry_run_output is failed or
+#      stack_update_dry_run_output is failed)
 
 - name: Handle the Stack (create/delete)
   ignore_errors: True
@@ -143,6 +143,14 @@
   - openshift_openstack_lbaasv2_provider == "Octavia"
   - (openshift_openstack_use_lbaas_load_balancer) or (openshift_use_kuryr | default(false) | bool and not openshift_openstack_provider_network_name)
   ignore_errors: true
+
+- name: Export subnet id env from stack
+  ignore_errors: True
+  shell: echo "{{ item.output_value }}" > /tmp/OS_SUBNET_ID
+  with_items: "{{ stack_create.stack.outputs }}"
+  when:
+  - item.output_key == 'subnet_id'
+
 
 - name: CleanUp
   include_tasks: cleanup.yml
